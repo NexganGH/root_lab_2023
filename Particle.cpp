@@ -84,8 +84,10 @@ ParticleType *Particle::getType() const { return fParticleType[fIndex]; }
 void Particle::print() const {
   std::cout << "--- Particle has name: " << getType()->getFName() << " ---"
             << std::endl;
-  std::cout << "(Px, Py, Pz) = (" << fPx_ << ", " << fPy_ << ", " << fPz_ << ")"
-            << std::endl;
+  std::cout << "(Px, Py, Pz) = (" << fPx_ << ", " << fPy_ << ", " << fPz_
+            << "), ";
+
+  std::cout << "m = " << GetMass() << std::endl;
 }
 
 double Particle::getFPx() const { return fPx_; }
@@ -157,6 +159,7 @@ int Particle::Decay2body(Particle &dau1, Particle &dau2) const {
           (massMot * massMot - (massDau1 - massDau2) * (massDau1 - massDau2))) /
       massMot * 0.5;
 
+  // std::cout << "pout: " << pout << std::endl;
   double norm = 2 * M_PI / RAND_MAX;
 
   double phi = rand() * norm;
@@ -166,12 +169,20 @@ int Particle::Decay2body(Particle &dau1, Particle &dau2) const {
   dau2.setP(-pout * sin(theta) * cos(phi), -pout * sin(theta) * sin(phi),
             -pout * cos(theta));
 
+  // std::cout << "phi: " << phi << std::endl;
+  // std::cout << "theta: " << theta << std::endl;
+
   double energy =
       sqrt(fPx_ * fPx_ + fPy_ * fPy_ + fPz_ * fPz_ + massMot * massMot);
+
+  // std::cout << "energy: " << energy << std::endl;
 
   double bx = fPx_ / energy;
   double by = fPy_ / energy;
   double bz = fPz_ / energy;
+
+  // std::cout << "(bx, by, bz) = " << bx << ", " << by << ", " << bz <<
+  // std::endl;
 
   dau1.Boost(bx, by, bz);
   dau2.Boost(bx, by, bz);
@@ -181,12 +192,16 @@ int Particle::Decay2body(Particle &dau1, Particle &dau2) const {
 void Particle::Boost(double bx, double by, double bz) {
 
   double energy = getTotalEnergy();
+  // std::cout << "Gettotalenergy: " << energy << std::endl;
+  //  Boost this Lorentz vector
 
-  // Boost this Lorentz vector
   double b2 = bx * bx + by * by + bz * bz;
   double gamma = 1.0 / sqrt(1.0 - b2);
+  // std::cout << "b2: " << b2 << std::endl;
   double bp = bx * fPx_ + by * fPy_ + bz * fPz_;
   double gamma2 = b2 > 0 ? (gamma - 1.0) / b2 : 0.0;
+
+  /// std::cout << "gamma " << gamma << ", " << gamma2 << std::endl;
 
   fPx_ += gamma2 * bp * bx + gamma * bx * energy;
   fPy_ += gamma2 * bp * by + gamma * by * energy;
