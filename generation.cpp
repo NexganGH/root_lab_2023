@@ -3,6 +3,7 @@
 #include "ResonanceType.hpp"
 
 #include "TCanvas.h"
+#include "TFile.h"
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TH3F.h"
@@ -12,7 +13,7 @@
 #include <iostream>
 #include <vector>
 
-const int N_EVENTS = 1E3;
+const int N_EVENTS = 1E5;
 const int N_PARTICLES_PER_EVENT = 100;
 
 const char *GenerateParticleType() {
@@ -128,17 +129,10 @@ void StartGeneration() {
           dec2.setIndex("K+");
         }
 
-        std::cout << "***************************************************"
-                  << std::endl;
-
         auto x = part.Decay2body(dec1, dec2);
         if (x == 0) {
           eventParticles.push_back(dec1);
           eventParticles.push_back(dec2);
-
-          part.print();
-          dec1.print();
-          dec2.print();
 
           k_star_dec->Fill(dec1.getInvariantMass(dec2));
         }
@@ -198,8 +192,6 @@ void StartGeneration() {
   }
 
   double total_entries = histo_particle_types->GetEntries();
-  std::cout << "Total entries: " << histo_particle_types->GetMinimumBin()
-            << ", " << histo_particle_types->GetMaximumBin() << std::endl;
 
   TCanvas *canvas = new TCanvas();
 
@@ -236,4 +228,21 @@ void StartGeneration() {
   histo_particle_types->Draw();
   canvas->cd(11);
   k_star_dec->Draw();
+
+  TFile *file = new TFile("save.root", "RECREATE");
+  file->Write();
+
+  histo_P_module->Write();
+  histo_angle->Write();
+  histo_impulso_trasverso->Write();
+  histo_energia->Write();
+  inv_mass->Write();
+  disc_inv_mass->Write();
+  conc_inv_mass->Write();
+  p_pos_k_neg->Write();
+  p_pos_k_pos->Write();
+  histo_particle_types->Write();
+  k_star_dec->Write();
+
+  file->Close();
 }
