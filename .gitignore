@@ -15,3 +15,6 @@
 /main_cpp.d
 /main_cpp.so
 /main_cpp_ACLiC_dict_rdict.pcm
+load_cpp.so
+load_cpp_ACLiC_dict_rdict.pcm
+load_cpp.d

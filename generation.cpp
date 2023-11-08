@@ -6,7 +6,7 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TH3F.h"
-#include "TROOT.h"
+
 #include "TRandom.h"
 #include <cmath>
 #include <iostream>
@@ -34,26 +34,8 @@ const char *GenerateParticleType() {
     return "K*";
 }
 
-void LoadFiles() {
-  // TSystem ts;
-  // gROOT->Reset();
-
-  // TString currentDir = gSystem->WorkingDirectory();
-
-  // Load multiple macros
-  // gROOT->ProcessLine(Form(".L %s/ParticleType.cpp", currentDir.Data()));
-  // gROOT->ProcessLine(Form(".L %s/ResonanceType.cpp", currentDir.Data()));
-  // gROOT->ProcessLine(Form(".L %s/Particle.cpp", currentDir.Data()));
-  gROOT->LoadMacro("ParticleType.cpp+");
-  gROOT->LoadMacro("ResonanceType.cpp+");
-  gROOT->LoadMacro("Particle.cpp+");
-  // Call functions from loaded macros
-  // gROOT->ProcessLine("macro1_function();");
-  // gROOT->ProcessLine("macro2_function();");
-}
-
 void StartGeneration() {
-  std::cout << "test" << std::endl;
+  std::cout << "Starting generation." << std::endl;
 
   Particle::AddParticleType("P+", 0.13957, 1, 0);
   Particle::AddParticleType("P-", 0.13957, -1, 0);
@@ -82,9 +64,9 @@ void StartGeneration() {
   // TH1F *hiso_theta = new TH1F("histo_theta", "theta", 100, 0., M_PI);
 
   TH1F *disc_inv_mass =
-      new TH1F("disc_inv_mass", "Discordant invariant mass", 100, 0., 1000.);
-  TH1F *disc_conc_mass =
-      new TH1F("disc_conc_mass", "Concordan invariant mass", 100, 0., 1000.);
+      new TH1F("disc_inv_mass", "Discordant invariant mass", 100, 0., 1.);
+  TH1F *conc_inv_mass =
+      new TH1F("conc_inv_mass", "Concordant invariant mass", 100, 0., 1.);
 
   std::vector<Particle> eventParticles;
   for (auto event = 0; event < N_EVENTS; event++) {
@@ -110,7 +92,6 @@ void StartGeneration() {
 
       part.setIndex(GenerateParticleType());
 
-      std::cout << part.getTotalEnergy() << std::endl;
       histo_energia->Fill(part.getTotalEnergy());
 
       eventParticles.push_back(part);
@@ -144,7 +125,7 @@ void StartGeneration() {
           disc_inv_mass->Fill(
               eventParticles[i].getInvariantMass(eventParticles[j]));
         else
-          disc_conc_mass->Fill(
+          conc_inv_mass->Fill(
               eventParticles[i].getInvariantMass(eventParticles[j]));
       }
     }
@@ -168,15 +149,10 @@ void StartGeneration() {
 
   canvas->cd(4);
   histo_energia->Draw();
-}
 
-void LoadAndStart() {
+  canvas->cd(5);
+  disc_inv_mass->Draw();
 
-  std::cout << "Loading..." << std::endl;
-  LoadFiles();
-  std::cout << "Loaded files. Starting generation..." << std::endl;
-
-  StartGeneration();
-
-  std::cout << "Generation completed." << std::endl;
+  canvas->cd(6);
+  conc_inv_mass->Draw();
 }
