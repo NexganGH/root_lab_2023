@@ -13,7 +13,7 @@
 #include <iostream>
 #include <vector>
 
-const int N_EVENTS = 1E5;
+const int N_EVENTS = 1E2;
 const int N_PARTICLES_PER_EVENT = 100;
 
 const char *GenerateParticleType() {
@@ -36,6 +36,7 @@ const char *GenerateParticleType() {
 }
 
 void StartGeneration() {
+  TFile *file = new TFile("save.root", "RECREATE");
   std::cout << "Starting generation." << std::endl;
 
   Particle::AddParticleType("P+", 0.13957, 1, 0);
@@ -50,7 +51,7 @@ void StartGeneration() {
 
   TH1F *histo_particle_types =
       new TH1F("histo_particelle", "Particelle", 7, 0, 7);
-
+  histo_particle_types->Sumw2();
   TH1F *histo_P_module =
       new TH1F("histo_P_module", "P_module", 100, 0.,
                1); // ho scelto il numero dei bin a caso e il limite
@@ -58,27 +59,33 @@ void StartGeneration() {
                    // distribuzioni eponenziali
   // TH1F *histo_phi = new TH1F("histo_phi", "phi", 100, 0., 2 * M_PI);
   // TH1F *histo_theta = new TH1F("histo_theta", "theta", 100, 0., M_PI);
+  histo_P_module->Sumw2();
   TH2F *histo_angle = new TH2F("histo_phi_theta", "Phi & Theta plot", 100, 0,
                                2 * M_PI, 100, 0, M_PI);
+  histo_angle->Sumw2();
   TH1F *histo_impulso_trasverso =
       new TH1F("histo_impulso_trasverso", "impulso_trasverso", 100, 0., 1);
+  histo_impulso_trasverso->Sumw2();
   TH1F *histo_energia = new TH1F("histo_energia", "Energia", 100, 0., 3);
-
+  histo_energia->Sumw2();
   // TH1F *hiso_theta = new TH1F("histo_theta", "theta", 100, 0., M_PI);
   // TH1F *hiso_theta = new TH1F("histo_theta", "theta", 100, 0., M_PI);
   TH1F *inv_mass = new TH1F("inv_mass", "Invariant mass", 100, 0., 3);
-
+  inv_mass->Sumw2();
   TH1F *disc_inv_mass =
       new TH1F("disc_inv_mass", "Discordant invariant mass", 100, 0., 3);
+  disc_inv_mass->Sumw2();
   TH1F *conc_inv_mass =
       new TH1F("conc_inv_mass", "Concordant invariant mass", 100, 0., 3);
-
+  conc_inv_mass->Sumw2();
   TH1F *p_pos_k_neg =
       new TH1F("p_pos_k_neg", "Pione+/Kaone- e Pione-/Kaone+", 100, 0., 3);
+  p_pos_k_neg->Sumw2();
   TH1F *p_pos_k_pos =
       new TH1F("p_pos_k_neg", "Pione+/Kaone+ e Pione-/Kaone-", 100, 0., 3);
-
+  p_pos_k_pos->Sumw2();
   TH1F *k_star_dec = new TH1F("k_star_dec", "Decadimento di K*", 45, 0.7, 1.1);
+  k_star_dec->Sumw2();
 
   std::vector<Particle> eventParticles;
   for (auto event = 0; event < N_EVENTS; event++) {
@@ -193,56 +200,71 @@ void StartGeneration() {
 
   double total_entries = histo_particle_types->GetEntries();
 
-  TCanvas *canvas = new TCanvas();
+  TCanvas *canvas1 = new TCanvas();
 
-  canvas->Divide(3, 4);
+  canvas1->Divide(2, 2);
 
-  canvas->cd(1);
-  histo_P_module->Draw();
+  canvas1->cd(1);
+  histo_particle_types->DrawCopy();
 
-  canvas->cd(2);
-  histo_angle->Draw();
+  canvas1->cd(2);
+  histo_P_module->DrawCopy();
 
-  canvas->cd(3);
-  histo_impulso_trasverso->Draw();
+  canvas1->cd(3);
+  histo_impulso_trasverso->DrawCopy();
 
-  canvas->cd(4);
-  histo_energia->Draw();
+  canvas1->cd(4);
+  histo_energia->DrawCopy();
 
-  canvas->cd(5);
-  inv_mass->Draw();
+  auto *canvas2 = new TCanvas();
+  canvas2->Divide(2, 2);
 
-  canvas->cd(6);
-  disc_inv_mass->Draw();
+  canvas2->cd(1);
+  histo_angle->DrawCopy();
 
-  canvas->cd(7);
-  conc_inv_mass->Draw();
+  auto histo_angle_px = histo_angle->ProjectionX();
+  canvas2->cd(2);
+  histo_angle_px->DrawCopy();
 
-  canvas->cd(8);
-  p_pos_k_neg->Draw();
+  auto histo_angle_py = histo_angle->ProjectionY();
+  canvas2->cd(3);
+  histo_angle_py->DrawCopy();
+  // proiezione
 
-  canvas->cd(9);
-  p_pos_k_pos->Draw();
+  auto *canvas3 = new TCanvas();
+  canvas3->Divide(2, 3);
 
-  canvas->cd(10);
-  histo_particle_types->Draw();
-  canvas->cd(11);
-  k_star_dec->Draw();
+  canvas3->cd(1);
+  inv_mass->DrawCopy();
 
-  TFile *file = new TFile("save.root", "RECREATE");
+  canvas3->cd(2);
+  disc_inv_mass->DrawCopy();
+
+  canvas3->cd(3);
+  conc_inv_mass->DrawCopy();
+
+  canvas3->cd(4);
+  p_pos_k_neg->DrawCopy();
+
+  canvas3->cd(5);
+  p_pos_k_pos->DrawCopy();
+
+  canvas3->cd(6);
+  k_star_dec->DrawCopy();
+
   file->Write();
 
-  histo_P_module->Write();
-  histo_angle->Write();
-  histo_impulso_trasverso->Write();
-  histo_energia->Write();
-  inv_mass->Write();
-  disc_inv_mass->Write();
-  conc_inv_mass->Write();
-  p_pos_k_neg->Write();
-  p_pos_k_pos->Write();
-  histo_particle_types->Write();
-  k_star_dec->Write();
+  // histo_P_module->Write();
+  // histo_angle->Write();
+  // histo_impulso_trasverso->Write();
+  // histo_energia->Write();
+  // inv_mass->Write();
+  // disc_inv_mass->Write();
+  // conc_inv_mass->Write();
+  // p_pos_k_neg->Write();
+  // p_pos_k_pos->Write();
+  // histo_particle_types->Write();
+  // k_star_dec->Write();
 
   file->Close();
 }

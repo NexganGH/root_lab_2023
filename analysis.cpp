@@ -4,6 +4,11 @@
 #include "TH2F.h"
 #include <iostream>
 
+void PrintParticleTypes(TH1F *histo_particles) {
+  for (int i = 0; i < histo_particles->GetNbinsX(); i++) {
+  }
+}
+
 void Analysis() {
   TFile *file = new TFile("save.root");
 
@@ -13,6 +18,11 @@ void Analysis() {
 
   auto *histo_P_module = file->Get<TH1F>("histo_P_module");
   auto *histo_angle = file->Get<TH2F>("histo_phi_theta");
+
+  auto *histo_angle_px = file->Get<TH1D>("histo_phi_theta_px");
+
+  auto *histo_angle_py = file->Get<TH1D>("histo_phi_theta_py");
+
   auto *histo_impulso_trasverso = file->Get<TH1F>("histo_impulso_trasverso");
   auto *histo_energia = file->Get<TH1F>("histo_energia");
 
@@ -26,31 +36,53 @@ void Analysis() {
 
   auto *k_star_dec = file->Get<TH1F>("k_star_dec");
 
-  TCanvas *canvas = new TCanvas();
+  TCanvas *canvas1 = new TCanvas();
 
-  canvas->Divide(3, 4);
+  canvas1->Divide(2, 2);
 
-  canvas->cd(1);
+  canvas1->cd(1);
   histo_particle_types->DrawCopy();
-  canvas->cd(2);
+
+  canvas1->cd(2);
   histo_P_module->DrawCopy();
-  canvas->cd(3);
-  histo_angle->DrawCopy();
-  canvas->cd(4);
+
+  canvas1->cd(3);
   histo_impulso_trasverso->DrawCopy();
-  canvas->cd(5);
+
+  canvas1->cd(4);
   histo_energia->DrawCopy();
-  canvas->cd(6);
+
+  auto canvas2 = new TCanvas();
+  canvas2->Divide(2, 2);
+
+  canvas2->cd(1);
+  histo_angle->DrawCopy();
+
+  canvas2->cd(2);
+  histo_angle_px->DrawCopy();
+
+  canvas2->cd(3);
+  histo_angle_py->DrawCopy();
+
+  auto *canvas3 = new TCanvas();
+  canvas3->Divide(2, 3);
+
+  canvas3->cd(1);
   inv_mass->DrawCopy();
-  canvas->cd(7);
+
+  canvas3->cd(2);
   disc_inv_mass->DrawCopy();
-  canvas->cd(8);
+
+  canvas3->cd(3);
   conc_inv_mass->DrawCopy();
-  canvas->cd(9);
+
+  canvas3->cd(4);
   p_pos_k_neg->DrawCopy();
-  canvas->cd(10);
+
+  canvas3->cd(5);
   p_pos_k_pos->DrawCopy();
-  canvas->cd(11);
+
+  canvas3->cd(6);
   k_star_dec->DrawCopy();
 
   file->Close();
