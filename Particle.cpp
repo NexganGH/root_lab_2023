@@ -34,6 +34,10 @@ int Particle::findParticle(const char *name) {
   return -1;
 }
 
+ParticleType *Particle::getParticle(const int index) {
+  return fParticleType[index];
+}
+
 int Particle::AddParticleType(const char *name, double mass, int charge,
                               double width) {
   if (fNumParticleType >= fMaxNumParticleType) {

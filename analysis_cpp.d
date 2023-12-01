@@ -1,6 +1,7 @@
 
 # DO NOT DELETE
 
+./analysis_cpp.so: Particle.hpp ParticleType.hpp
 ./analysis_cpp.so: /home/nico/root/include/TCanvas.h
 ./analysis_cpp.so: /home/nico/root/include/TPad.h
 ./analysis_cpp.so: /home/nico/root/include/TVirtualPad.h

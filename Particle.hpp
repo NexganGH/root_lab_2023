@@ -32,6 +32,7 @@ public:
   static int AddParticleType(const char *name, double mass, int charge,
                              double width = 0);
   static void printAllTypes();
+  static ParticleType *getParticle(const int index);
 
 private:
   const static int fMaxNumParticleType = 10;
@@ -44,6 +45,7 @@ private:
   double fPz_;
 
   static int findParticle(const char *name);
+
   void Boost(double bx, double by, double bz);
 };
 

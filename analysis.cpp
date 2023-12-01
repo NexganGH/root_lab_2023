@@ -1,3 +1,4 @@
+#include "Particle.hpp"
 #include "TCanvas.h"
 #include "TFile.h"
 #include "TH1F.h"
@@ -5,7 +6,23 @@
 #include <iostream>
 
 void PrintParticleTypes(TH1F *histo_particles) {
+  auto total_n = histo_particles->GetEntries();
+  std::cout << "Total entries: " << total_n << std::endl;
   for (int i = 0; i < histo_particles->GetNbinsX(); i++) {
+
+    std::cout << "Particle: " << i << std::endl;
+    double n_particle_type = histo_particles->GetBinContent(i + 1);
+    std::cout << "after particle type";
+    double n_particle_error = histo_particles->GetBinError(i + 1);
+    std::cout << "after error";
+    auto type = Particle::getParticle(i);
+
+    std::cout << "after type";
+    auto type_percentage = n_particle_type / total_n;
+    auto error_percentage = n_particle_error / total_n;
+
+    std::cout << "Particle " << type->getFName() << ": " << type_percentage
+              << ", error: " << error_percentage << std::endl;
   }
 }
 
@@ -35,6 +52,8 @@ void Analysis() {
   auto *p_pos_k_pos = file->Get<TH1F>("p_pos_k_neg");
 
   auto *k_star_dec = file->Get<TH1F>("k_star_dec");
+
+  PrintParticleTypes(histo_particle_types);
 
   TCanvas *canvas1 = new TCanvas();
 
@@ -86,35 +105,4 @@ void Analysis() {
   k_star_dec->DrawCopy();
 
   file->Close();
-
-  //   TH1F *histo_P_module =
-  //       new TH1F("histo_P_module", "P_module", 100, 0.,
-  //                1); // ho scelto il numero dei bin a caso e il limite
-  //                    // superiore a caso perchè dovrebbe essere genera da
-  //                    // distribuzioni eponenziali
-  //   // TH1F *histo_phi = new TH1F("histo_phi", "phi", 100, 0., 2 * M_PI);
-  //   // TH1F *histo_theta = new TH1F("histo_theta", "theta", 100, 0., M_PI);
-  //   TH2F *histo_angle = new TH2F("histo_phi_theta", "Phi & Theta plot", 100,
-  //   0,
-  //                                2 * M_PI, 100, 0, M_PI);
-  //   TH1F *histo_impulso_trasverso =
-  //       new TH1F("histo_impulso_trasverso", "impulso_trasverso", 100, 0., 1);
-  //   TH1F *histo_energia = new TH1F("histo_energia", "Energia", 100, 0., 3);
-
-  //   // TH1F *hiso_theta = new TH1F("histo_theta", "theta", 100, 0., M_PI);
-  //   // TH1F *hiso_theta = new TH1F("histo_theta", "theta", 100, 0., M_PI);
-  //   TH1F *inv_mass = new TH1F("inv_mass", "Invariant mass", 100, 0., 3);
-
-  //   TH1F *disc_inv_mass =
-  //       new TH1F("disc_inv_mass", "Discordant invariant mass", 100, 0., 3);
-  //   TH1F *conc_inv_mass =
-  //       new TH1F("conc_inv_mass", "Concordant invariant mass", 100, 0., 3);
-
-  //   TH1F *p_pos_k_neg =
-  //       new TH1F("p_pos_k_neg", "Pione+/Kaone- e Pione-/Kaone+", 100, 0., 3);
-  //   TH1F *p_pos_k_pos =
-  //       new TH1F("p_pos_k_neg", "Pione+/Kaone+ e Pione-/Kaone-", 100, 0., 3);
-
-  //   TH1F *k_star_dec = new TH1F("k_star_dec", "Decadimento di K*", 45,
-  //   0.7, 1.1);
 }
