@@ -6,12 +6,13 @@
 class ResonanceType : public ParticleType {
 
 public:
-  ResonanceType(const char *name, double mass, int charge, double width);
+  ResonanceType(const char *name, const double mass, const int charge,
+                const double width);
   double GetWidth() const override;
   void print() const override;
 
 private:
-  double fWidth_;
+  const double fWidth_;
 };
 
 #endif

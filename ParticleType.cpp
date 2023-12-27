@@ -2,7 +2,8 @@
 #include <cassert>
 #include <iostream>
 
-ParticleType::ParticleType(const char *name, double mass, int charge)
+ParticleType::ParticleType(const char *name, const double mass,
+                           const int charge)
     : fName_{name}, fMass_{mass}, fCharge_{charge} {
   assert(mass > 0);
 }

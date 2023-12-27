@@ -4,7 +4,7 @@
 class ParticleType {
 
 public:
-  ParticleType(const char *name, double mass, int charge);
+  ParticleType(const char *name, const double mass, const int charge);
 
   const char *getFName() const;
 
@@ -18,8 +18,8 @@ public:
 
 private:
   const char *fName_;
-  double fMass_;
-  int fCharge_;
+  const double fMass_;
+  const int fCharge_;
 };
 
 #endif

@@ -1,3 +1,4 @@
+#include "DefaultParticles.hpp"
 #include "Particle.hpp"
 #include "ParticleType.hpp"
 #include "ResonanceType.hpp"
@@ -38,14 +39,7 @@ const char *GenerateParticleType() {
 void StartGeneration() {
   TFile *file = new TFile("save.root", "RECREATE");
   std::cout << "Starting generation." << std::endl;
-
-  Particle::AddParticleType("P+", 0.13957, 1, 0);
-  Particle::AddParticleType("P-", 0.13957, -1, 0);
-  Particle::AddParticleType("K+", 0.49367, 1, 0);
-  Particle::AddParticleType("K-", 0.49367, -1, 0);
-  Particle::AddParticleType("pr+", 0.93827, 1, 0);
-  Particle::AddParticleType("pr-", 0.93827, -1, 0); // protoni negativi?
-  Particle::AddParticleType("K*", 0.89166, 0, 0.050);
+  DefaultParticles::Load();
 
   gRandom->SetSeed();
 
@@ -68,8 +62,6 @@ void StartGeneration() {
   histo_impulso_trasverso->Sumw2();
   TH1F *histo_energia = new TH1F("histo_energia", "Energia", 100, 0., 3);
   histo_energia->Sumw2();
-  // TH1F *hiso_theta = new TH1F("histo_theta", "theta", 100, 0., M_PI);
-  // TH1F *hiso_theta = new TH1F("histo_theta", "theta", 100, 0., M_PI);
   TH1F *inv_mass = new TH1F("inv_mass", "Invariant mass", 100, 0., 3);
   inv_mass->Sumw2();
   TH1F *disc_inv_mass =
@@ -82,7 +74,7 @@ void StartGeneration() {
       new TH1F("p_pos_k_neg", "Pione+/Kaone- e Pione-/Kaone+", 100, 0., 3);
   p_pos_k_neg->Sumw2();
   TH1F *p_pos_k_pos =
-      new TH1F("p_pos_k_neg", "Pione+/Kaone+ e Pione-/Kaone-", 100, 0., 3);
+      new TH1F("p_pos_k_pos", "Pione+/Kaone+ e Pione-/Kaone-", 100, 0., 3);
   p_pos_k_pos->Sumw2();
   TH1F *k_star_dec = new TH1F("k_star_dec", "Decadimento di K*", 45, 0.7, 1.1);
   k_star_dec->Sumw2();
@@ -92,7 +84,7 @@ void StartGeneration() {
     // Particle *eventParticles[N_PARTICLES_PER_EVENT + 20];
 
     for (auto particle = 0; particle < N_PARTICLES_PER_EVENT; particle++) {
-      Particle part; // = new Particle();
+      // Particle part; // = new Particle();
       double phi = gRandom->Uniform(2 * M_PI);
       double theta = gRandom->Uniform(M_PI);
       double momentum = gRandom->Exp(1); // 1 GeV
@@ -107,14 +99,15 @@ void StartGeneration() {
       auto mom_trasv = std::sqrt(std::pow(pX, 2) + std::pow(pY, 2));
       histo_impulso_trasverso->Fill(mom_trasv);
 
-      part.setP(pX, pY, pZ);
-
-      auto indiceP = part.setIndex(GenerateParticleType());
+      // part.setP(pX, pY, pZ);
+      auto partType = GenerateParticleType();
+      Particle part(partType, pX, pY, pZ);
+      // auto indiceP = part.setIndex(GenerateParticleType());
 
       // int indice_particella=part.setIndex(GenerateParticleType());
 
       // Ottenere il valore attuale del bin
-      histo_particle_types->Fill(indiceP);
+      histo_particle_types->Fill(part.getFIndex());
       // double currentValue = histo_particle_types->GetBinContent(indiceP);
 
       // // Incrementare il valore del bin
@@ -125,8 +118,8 @@ void StartGeneration() {
       eventParticles.push_back(part);
 
       if (strcmp(part.getType()->getFName(), "K*") == 0) {
-        Particle dec1; // = new Particle();
-        Particle dec2; // = new Particle();
+        Particle dec1;
+        Particle dec2;
 
         if (gRandom->Uniform() < 0.5) {
           dec1.setIndex("P+");
