@@ -10,11 +10,12 @@
 #include "TH3F.h"
 
 #include "TRandom.h"
+#include <array>
 #include <cmath>
 #include <iostream>
 #include <vector>
 
-const int N_EVENTS = 1E2;
+const int N_EVENTS = 1E3;
 const int N_PARTICLES_PER_EVENT = 100;
 
 const char *GenerateParticleType() {
@@ -46,13 +47,7 @@ void StartGeneration() {
   TH1F *histo_particle_types =
       new TH1F("histo_particelle", "Particelle", 7, 0, 7);
   histo_particle_types->Sumw2();
-  TH1F *histo_P_module =
-      new TH1F("histo_P_module", "P_module", 100, 0.,
-               1); // ho scelto il numero dei bin a caso e il limite
-                   // superiore a caso perchè dovrebbe essere genera da
-                   // distribuzioni eponenziali
-  // TH1F *histo_phi = new TH1F("histo_phi", "phi", 100, 0., 2 * M_PI);
-  // TH1F *histo_theta = new TH1F("histo_theta", "theta", 100, 0., M_PI);
+  TH1F *histo_P_module = new TH1F("histo_P_module", "P_module", 100, 0., 1);
   histo_P_module->Sumw2();
   TH2F *histo_angle = new TH2F("histo_phi_theta", "Phi & Theta plot", 100, 0,
                                2 * M_PI, 100, 0, M_PI);
@@ -79,11 +74,14 @@ void StartGeneration() {
   TH1F *k_star_dec = new TH1F("k_star_dec", "Decadimento di K*", 45, 0.7, 1.1);
   k_star_dec->Sumw2();
 
-  std::vector<Particle> eventParticles;
+  // std::array<Particle, N_PARTICLES_PER_EVENT + 30> eventParticles;
+  Particle eventParticles[N_PARTICLES_PER_EVENT + 30];
+
   for (auto event = 0; event < N_EVENTS; event++) {
     // Particle *eventParticles[N_PARTICLES_PER_EVENT + 20];
-
-    for (auto particle = 0; particle < N_PARTICLES_PER_EVENT; particle++) {
+    int decayIndex = N_PARTICLES_PER_EVENT;
+    for (auto particleIndex = 0; particleIndex < N_PARTICLES_PER_EVENT;
+         particleIndex++) {
       // Particle part; // = new Particle();
       double phi = gRandom->Uniform(2 * M_PI);
       double theta = gRandom->Uniform(M_PI);
@@ -99,23 +97,18 @@ void StartGeneration() {
       auto mom_trasv = std::sqrt(std::pow(pX, 2) + std::pow(pY, 2));
       histo_impulso_trasverso->Fill(mom_trasv);
 
-      // part.setP(pX, pY, pZ);
       auto partType = GenerateParticleType();
       Particle part(partType, pX, pY, pZ);
-      // auto indiceP = part.setIndex(GenerateParticleType());
 
-      // int indice_particella=part.setIndex(GenerateParticleType());
+      auto p = part.getFIndex();
 
-      // Ottenere il valore attuale del bin
-      histo_particle_types->Fill(part.getFIndex());
-      // double currentValue = histo_particle_types->GetBinContent(indiceP);
-
-      // // Incrementare il valore del bin
-      // histo_particle_types->SetBinContent(indiceP, currentValue + 1);
+      histo_particle_types->Fill(p);
 
       auto total_energy = part.getTotalEnergy();
+
+      // std::cout << "FILL ENERGY " << std::endl;
       histo_energia->Fill(total_energy);
-      eventParticles.push_back(part);
+      eventParticles[particleIndex] = part;
 
       if (strcmp(part.getType()->getFName(), "K*") == 0) {
         Particle dec1;
@@ -129,66 +122,73 @@ void StartGeneration() {
           dec2.setIndex("K+");
         }
 
-        auto x = part.Decay2body(dec1, dec2);
-        if (x == 0) {
-          eventParticles.push_back(dec1);
-          eventParticles.push_back(dec2);
+        auto err = part.Decay2body(dec1, dec2);
+        if (err == 0) {
 
           k_star_dec->Fill(dec1.getInvariantMass(dec2));
+          eventParticles[decayIndex++] = dec1;
+          eventParticles[decayIndex++] = dec2;
+        }
+      } else {
+        for (auto j = 0; j < particleIndex; j++) {
+          auto first = eventParticles[particleIndex];
+          auto second = eventParticles[j];
+
+          if (second.getType()->getFCharge() == 0)
+            continue;
+
+          auto sign =
+              first.getType()->getFCharge() * second.getType()->getFCharge();
+
+          if (sign == 0) {
+            std::cout << "SIGN=0: " << first.getType()->getFName() << ", "
+                      << second.getType()->getFName() << std::endl;
+            std::cout
+                << "COMPARISON: strcmp(part.getType()->getFName(), \"K*\") = "
+                << strcmp(part.getType()->getFName(), "K*") << std::endl;
+
+            std::cout << "PART TYPE: " << part.getType()->getFName();
+          }
+
+          auto invariantMass = first.getInvariantMass(second);
+
+          inv_mass->Fill(invariantMass);
+
+          if (sign <= 0)
+            disc_inv_mass->Fill(invariantMass);
+          else
+            conc_inv_mass->Fill(invariantMass);
+
+          int pIndex = -1;
+          int kIndex = -1;
+
+          auto iType = first.getType()->getFName();
+          auto jType = second.getType()->getFName();
+
+          if (strcmp(iType, "P+") == 0 || strcmp(iType, "P-") == 0) {
+            pIndex = particleIndex;
+            if (strcmp(jType, "K+") == 0 || strcmp(jType, "K-") == 0) {
+              kIndex = j;
+            }
+          } else if (strcmp(jType, "P+") == 0 || strcmp(jType, "P-") == 0) {
+            pIndex = j;
+            if (strcmp(iType, "K+") == 0 || strcmp(iType, "K-") == 0) {
+              kIndex = particleIndex;
+            }
+          }
+
+          // In this case we know we have a P and a K
+          if (pIndex != -1 && kIndex != -1) {
+            auto sign =
+                first.getType()->getFCharge() * second.getType()->getFCharge();
+            if (sign < 0)
+              p_pos_k_neg->Fill(invariantMass);
+            else
+              p_pos_k_pos->Fill(invariantMass);
+          }
         }
       }
     }
-
-    for (auto i = 0; i < eventParticles.size(); i++) {
-      for (auto j = i + 1; j < eventParticles.size(); j++) {
-        auto sign = eventParticles[i].getType()->getFCharge() *
-                    eventParticles[j].getType()->getFCharge();
-
-        auto invariantMass =
-            eventParticles[i].getInvariantMass(eventParticles[j]);
-
-        inv_mass->Fill(invariantMass);
-
-        if (sign < 0)
-          disc_inv_mass->Fill(invariantMass);
-        else
-          conc_inv_mass->Fill(invariantMass);
-
-        int pIndex = -1;
-        int kIndex = -1;
-
-        auto iType = eventParticles[i].getType()->getFName();
-        auto jType = eventParticles[j].getType()->getFName();
-
-        if (strcmp(iType, "P+") == 0 || strcmp(iType, "P-") == 0) {
-          pIndex = i;
-          if (strcmp(jType, "K+") == 0 || strcmp(jType, "K-") == 0) {
-            kIndex = j;
-          }
-        } else if (strcmp(jType, "P+") == 0 || strcmp(jType, "P-") == 0) {
-          pIndex = j;
-          if (strcmp(iType, "K+") == 0 || strcmp(iType, "K-") == 0) {
-            kIndex = i;
-          }
-        }
-
-        // In this case we know we have a P and a K
-        if (pIndex != -1 && kIndex != -1) {
-          int iSign =
-              strcmp(iType, "P+") == 0 || strcmp(iType, "K+") == 0 ? +1 : -1;
-          int jSign = strcmp(jType, "P+") || strcmp(iType, "K+") ? +1 : -1;
-
-          if (iSign * jSign == 1) {
-            p_pos_k_pos->Fill(invariantMass);
-          } else {
-            p_pos_k_neg->Fill(invariantMass);
-          }
-        }
-      }
-    }
-
-    eventParticles.clear();
-    eventParticles.shrink_to_fit();
   }
 
   double total_entries = histo_particle_types->GetEntries();
@@ -246,18 +246,6 @@ void StartGeneration() {
   k_star_dec->DrawCopy();
 
   file->Write();
-
-  // histo_P_module->Write();
-  // histo_angle->Write();
-  // histo_impulso_trasverso->Write();
-  // histo_energia->Write();
-  // inv_mass->Write();
-  // disc_inv_mass->Write();
-  // conc_inv_mass->Write();
-  // p_pos_k_neg->Write();
-  // p_pos_k_pos->Write();
-  // histo_particle_types->Write();
-  // k_star_dec->Write();
 
   file->Close();
 }

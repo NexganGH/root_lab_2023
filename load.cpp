@@ -9,4 +9,6 @@ void LoadFiles() {
   gROOT->LoadMacro("Particle.cpp+");
 
   ReloadGeneration();
+
+  gROOT->LoadMacro("analysis.cpp+");
 }

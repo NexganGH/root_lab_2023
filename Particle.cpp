@@ -105,8 +105,8 @@ void Particle::setP(double px, double py, double pz) {
 }
 
 double Particle::getTotalEnergy() const {
-  return sqrt(std::pow(getType()->getFMass(), 2) + pow(fPx_, 2) + pow(fPy_, 2) +
-              pow(fPz_, 2));
+  return std::sqrt(std::pow(getType()->getFMass(), 2) + std::pow(fPx_, 2) +
+                   std::pow(fPy_, 2) + std::pow(fPz_, 2));
 }
 
 double Particle::getInvariantMass(Particle &p2) const {

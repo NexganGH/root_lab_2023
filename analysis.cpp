@@ -70,7 +70,7 @@ void PrintPModuleFit(TH1F *histo_p_module) {
 
 TH1F *SubtractInvMass(TH1F *disc_histo, TH1F *conc_histo) {
   TH1F *res = new TH1F(*disc_histo);
-  res->Add(disc_histo, conc_histo, 1, -1);
+  res->Add(conc_histo, -1);
 
   return res;
 }

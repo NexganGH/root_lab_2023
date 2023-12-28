@@ -18,3 +18,6 @@
 load_cpp.so
 load_cpp_ACLiC_dict_rdict.pcm
 load_cpp.d
+analysis_cpp_ACLiC_dict8226a0b686_dictContent.h
+.gitignore
+analysis_cpp_ACLiC_dict_rdict.pcm
