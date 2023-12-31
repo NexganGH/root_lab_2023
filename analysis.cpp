@@ -164,12 +164,16 @@ void Analysis() {
   canvas4->Divide(2, 2);
   auto total = SubtractInvMass(disc_inv_mass, conc_inv_mass);
   canvas4->cd(1);
-  total->DrawCopy();
+  total->DrawCopy("P");
+  total->Fit("gaus");
+  total->DrawCopy("P");
   // histo_energia->DrawCopy();
 
   auto pioni_kaoni = SubtractInvMass(p_pos_k_neg, p_pos_k_pos);
   canvas4->cd(2);
-  pioni_kaoni->DrawCopy();
+  pioni_kaoni->DrawCopy("P");
+  pioni_kaoni->Fit("gaus");
+  pioni_kaoni->DrawCopy("P");
   // histo_angle->DrawCopy();
 
   // canvas

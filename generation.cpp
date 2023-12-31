@@ -129,63 +129,55 @@ void StartGeneration() {
           eventParticles[decayIndex++] = dec1;
           eventParticles[decayIndex++] = dec2;
         }
-      } else {
-        for (auto j = 0; j < particleIndex; j++) {
-          auto first = eventParticles[particleIndex];
-          auto second = eventParticles[j];
+      }
+    }
 
-          if (second.getType()->getFCharge() == 0)
-            continue;
+    for (auto i = 0; i < decayIndex; i++) {
+      for (auto j = 0; j < i; j++) {
+        auto first = eventParticles[i];
+        auto second = eventParticles[j];
 
+        auto sign =
+            first.getType()->getFCharge() * second.getType()->getFCharge();
+
+        auto invariantMass = first.getInvariantMass(second);
+
+        inv_mass->Fill(invariantMass);
+
+        if (sign < 0)
+          disc_inv_mass->Fill(invariantMass);
+        else if (sign > 0) // if (i < N_PARTICLES_PER_EVENT) (per escludere le
+                           // particelle figlie)
+          conc_inv_mass->Fill(invariantMass);
+        else // sign is 0
+          continue;
+
+        int pIndex = -1;
+        int kIndex = -1;
+
+        auto iType = first.getType()->getFName();
+        auto jType = second.getType()->getFName();
+
+        if (strcmp(iType, "P+") == 0 || strcmp(iType, "P-") == 0) {
+          pIndex = i;
+          if (strcmp(jType, "K+") == 0 || strcmp(jType, "K-") == 0) {
+            kIndex = i;
+          }
+        } else if (strcmp(jType, "P+") == 0 || strcmp(jType, "P-") == 0) {
+          pIndex = i;
+          if (strcmp(iType, "K+") == 0 || strcmp(iType, "K-") == 0) {
+            kIndex = i;
+          }
+        }
+
+        // In this case we know we have a P and a K
+        if (pIndex != -1 && kIndex != -1) {
           auto sign =
               first.getType()->getFCharge() * second.getType()->getFCharge();
-
-          if (sign == 0) {
-            std::cout << "SIGN=0: " << first.getType()->getFName() << ", "
-                      << second.getType()->getFName() << std::endl;
-            std::cout
-                << "COMPARISON: strcmp(part.getType()->getFName(), \"K*\") = "
-                << strcmp(part.getType()->getFName(), "K*") << std::endl;
-
-            std::cout << "PART TYPE: " << part.getType()->getFName();
-          }
-
-          auto invariantMass = first.getInvariantMass(second);
-
-          inv_mass->Fill(invariantMass);
-
-          if (sign <= 0)
-            disc_inv_mass->Fill(invariantMass);
+          if (sign < 0)
+            p_pos_k_neg->Fill(invariantMass);
           else
-            conc_inv_mass->Fill(invariantMass);
-
-          int pIndex = -1;
-          int kIndex = -1;
-
-          auto iType = first.getType()->getFName();
-          auto jType = second.getType()->getFName();
-
-          if (strcmp(iType, "P+") == 0 || strcmp(iType, "P-") == 0) {
-            pIndex = particleIndex;
-            if (strcmp(jType, "K+") == 0 || strcmp(jType, "K-") == 0) {
-              kIndex = j;
-            }
-          } else if (strcmp(jType, "P+") == 0 || strcmp(jType, "P-") == 0) {
-            pIndex = j;
-            if (strcmp(iType, "K+") == 0 || strcmp(iType, "K-") == 0) {
-              kIndex = particleIndex;
-            }
-          }
-
-          // In this case we know we have a P and a K
-          if (pIndex != -1 && kIndex != -1) {
-            auto sign =
-                first.getType()->getFCharge() * second.getType()->getFCharge();
-            if (sign < 0)
-              p_pos_k_neg->Fill(invariantMass);
-            else
-              p_pos_k_pos->Fill(invariantMass);
-          }
+            p_pos_k_pos->Fill(invariantMass);
         }
       }
     }
