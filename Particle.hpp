@@ -1,29 +1,29 @@
 #ifndef PARTICLE_H
 #define PARTICLE_H
 
-#include "ParticleType.hpp"
+#include "ResonanceType.hpp"
 
 class Particle {
 public:
   Particle(const char *particleTypeName, double fPx, double fPy, double fPz);
   Particle();
 
-  int getFIndex() const;
+  int GetIndex() const;
 
-  int setIndex(const char *name);
-  int setIndex(int index);
-  void print() const;
+  int SetIndex(const char *name);
+  int SetIndex(int index);
+  void Print() const;
 
-  ParticleType *getType() const;
+  ParticleType *GetType() const;
 
-  double getFPx() const;
-  double getFPy() const;
-  double getFPz() const;
+  double GetFPx() const;
+  double GetFPy() const;
+  double GetFPz() const;
 
-  void setP(double px, double py, double pz);
+  void SetP(double px, double py, double pz);
 
-  double getTotalEnergy() const;
-  double getInvariantMass(Particle &p2) const;
+  double GetTotalEnergy() const;
+  double GetInvariantMass(Particle &p2) const;
 
   int Decay2body(Particle &dau1, Particle &dau2) const;
 
@@ -31,8 +31,9 @@ public:
 
   static int AddParticleType(const char *name, double mass, int charge,
                              double width = 0);
-  static void printAllTypes();
-  static ParticleType *getParticle(const int index);
+  static void ResetParticleTypes();
+  static void PrintAllTypes();
+  static ParticleType *GetParticle(const int index);
 
 private:
   const static int fMaxNumParticleType = 10;
@@ -44,7 +45,7 @@ private:
   double fPy_;
   double fPz_;
 
-  static int findParticle(const char *name);
+  static int FindParticle(const char *name);
 
   void Boost(double bx, double by, double bz);
 };

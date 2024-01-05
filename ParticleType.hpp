@@ -6,13 +6,13 @@ class ParticleType {
 public:
   ParticleType(const char *name, const double mass, const int charge);
 
-  const char *getFName() const;
+  const char *GetName() const;
 
-  double getFMass() const;
+  double GetMass() const;
 
-  double getFCharge() const;
+  double GetCharge() const;
 
-  virtual void print() const;
+  virtual void Print() const;
 
   virtual double GetWidth() const;
 

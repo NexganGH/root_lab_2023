@@ -9,7 +9,7 @@ public:
   ResonanceType(const char *name, const double mass, const int charge,
                 const double width);
   double GetWidth() const override;
-  void print() const override;
+  void Print() const override;
 
 private:
   const double fWidth_;

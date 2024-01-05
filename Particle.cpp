@@ -1,6 +1,4 @@
 #include "Particle.hpp"
-#include "ParticleType.hpp"
-#include "ResonanceType.hpp"
 
 #include <cmath>
 #include <iostream>
@@ -11,7 +9,7 @@ ParticleType *Particle::fParticleType[Particle::fMaxNumParticleType];
 Particle::Particle(const char *particleTypeName, double fPx, double fPy,
                    double fPz)
     : fPx_{fPx}, fPy_{fPy}, fPz_{fPz} {
-  fIndex = findParticle(particleTypeName);
+  fIndex = FindParticle(particleTypeName);
   if (fIndex < 0) {
     std::cout << "Particella dal nome " << particleTypeName << " non trovata!"
               << std::endl;
@@ -21,12 +19,12 @@ Particle::Particle(const char *particleTypeName, double fPx, double fPy,
 
 Particle::Particle() { fIndex = -1; };
 
-int Particle::getFIndex() const { return fIndex; }
+int Particle::GetIndex() const { return fIndex; }
 
 // Ritorna -1 se non la trova.
-int Particle::findParticle(const char *name) {
+int Particle::FindParticle(const char *name) {
   for (auto i = 0; i < fNumParticleType; i++) {
-    if (fParticleType[i]->getFName() == name) {
+    if (fParticleType[i]->GetName() == name) {
       return i;
     }
   }
@@ -34,7 +32,7 @@ int Particle::findParticle(const char *name) {
   return -1;
 }
 
-ParticleType *Particle::getParticle(const int index) {
+ParticleType *Particle::GetParticle(const int index) {
   return fParticleType[index];
 }
 
@@ -45,7 +43,7 @@ int Particle::AddParticleType(const char *name, double mass, int charge,
     return -1;
   }
 
-  auto index = findParticle(name);
+  auto index = FindParticle(name);
   if (index != -1) {
     std::cout << name << " già presente." << std::endl;
     return index;
@@ -60,7 +58,9 @@ int Particle::AddParticleType(const char *name, double mass, int charge,
   return fNumParticleType++;
 }
 
-int Particle::setIndex(int index) {
+void Particle::ResetParticleTypes() { fNumParticleType = 0; }
+
+int Particle::SetIndex(int index) {
   if (index >= fMaxNumParticleType)
     throw std::invalid_argument("Particella num. " + std::to_string(index) +
                                 "non esiste. ");
@@ -68,8 +68,8 @@ int Particle::setIndex(int index) {
   return fIndex;
 }
 
-int Particle::setIndex(const char *name) {
-  auto index = findParticle(name);
+int Particle::SetIndex(const char *name) {
+  auto index = FindParticle(name);
   if (index == -1)
     throw std::invalid_argument("Particella " + std::string(name) +
                                 " non esiste.");
@@ -77,16 +77,16 @@ int Particle::setIndex(const char *name) {
   return index;
 }
 
-void Particle::printAllTypes() {
+void Particle::PrintAllTypes() {
   for (auto i = 0; i < fNumParticleType; i++) {
-    fParticleType[i]->print();
+    fParticleType[i]->Print();
   }
 }
 
-ParticleType *Particle::getType() const { return fParticleType[fIndex]; }
+ParticleType *Particle::GetType() const { return fParticleType[fIndex]; }
 
-void Particle::print() const {
-  std::cout << "--- Particle has name: " << getType()->getFName() << " ---"
+void Particle::Print() const {
+  std::cout << "--- Particle has name: " << GetType()->GetName() << " ---"
             << std::endl;
   std::cout << "(Px, Py, Pz) = (" << fPx_ << ", " << fPy_ << ", " << fPz_
             << "), ";
@@ -94,23 +94,23 @@ void Particle::print() const {
   std::cout << "m = " << GetMass() << std::endl;
 }
 
-double Particle::getFPx() const { return fPx_; }
-double Particle::getFPy() const { return fPy_; }
-double Particle::getFPz() const { return fPz_; }
+double Particle::GetFPx() const { return fPx_; }
+double Particle::GetFPy() const { return fPy_; }
+double Particle::GetFPz() const { return fPz_; }
 
-void Particle::setP(double px, double py, double pz) {
+void Particle::SetP(double px, double py, double pz) {
   fPx_ = px;
   fPy_ = py;
   fPz_ = pz;
 }
 
-double Particle::getTotalEnergy() const {
-  return std::sqrt(std::pow(getType()->getFMass(), 2) + std::pow(fPx_, 2) +
+double Particle::GetTotalEnergy() const {
+  return std::sqrt(std::pow(GetType()->GetMass(), 2) + std::pow(fPx_, 2) +
                    std::pow(fPy_, 2) + std::pow(fPz_, 2));
 }
 
-double Particle::getInvariantMass(Particle &p2) const {
-  auto totalEnergy = pow(getTotalEnergy() + p2.getTotalEnergy(), 2);
+double Particle::GetInvariantMass(Particle &p2) const {
+  auto totalEnergy = pow(GetTotalEnergy() + p2.GetTotalEnergy(), 2);
   auto totalP =
       pow(fPx_ + p2.fPx_, 2) + pow(fPy_ + p2.fPy_, 2) + pow(fPz_ + p2.fPz_, 2);
   // auto totalP = fPx_ * fPx_ + fPy_ * fPy_ + fPz_ * fPz_;
@@ -118,7 +118,7 @@ double Particle::getInvariantMass(Particle &p2) const {
   return std::sqrt(totalEnergy - totalP);
 }
 
-double Particle::GetMass() const { return getType()->getFMass(); }
+double Particle::GetMass() const { return GetType()->GetMass(); }
 
 int Particle::Decay2body(Particle &dau1, Particle &dau2) const {
   if (GetMass() == 0.0) {
@@ -163,30 +163,21 @@ int Particle::Decay2body(Particle &dau1, Particle &dau2) const {
           (massMot * massMot - (massDau1 - massDau2) * (massDau1 - massDau2))) /
       massMot * 0.5;
 
-  // std::cout << "pout: " << pout << std::endl;
   double norm = 2 * M_PI / RAND_MAX;
 
   double phi = rand() * norm;
   double theta = rand() * norm * 0.5 - M_PI / 2.;
-  dau1.setP(pout * sin(theta) * cos(phi), pout * sin(theta) * sin(phi),
+  dau1.SetP(pout * sin(theta) * cos(phi), pout * sin(theta) * sin(phi),
             pout * cos(theta));
-  dau2.setP(-pout * sin(theta) * cos(phi), -pout * sin(theta) * sin(phi),
+  dau2.SetP(-pout * sin(theta) * cos(phi), -pout * sin(theta) * sin(phi),
             -pout * cos(theta));
-
-  // std::cout << "phi: " << phi << std::endl;
-  // std::cout << "theta: " << theta << std::endl;
 
   double energy =
       sqrt(fPx_ * fPx_ + fPy_ * fPy_ + fPz_ * fPz_ + massMot * massMot);
 
-  // std::cout << "energy: " << energy << std::endl;
-
   double bx = fPx_ / energy;
   double by = fPy_ / energy;
   double bz = fPz_ / energy;
-
-  // std::cout << "(bx, by, bz) = " << bx << ", " << by << ", " << bz <<
-  // std::endl;
 
   dau1.Boost(bx, by, bz);
   dau2.Boost(bx, by, bz);
@@ -195,7 +186,7 @@ int Particle::Decay2body(Particle &dau1, Particle &dau2) const {
 }
 void Particle::Boost(double bx, double by, double bz) {
 
-  double energy = getTotalEnergy();
+  double energy = GetTotalEnergy();
   // std::cout << "Gettotalenergy: " << energy << std::endl;
   //  Boost this Lorentz vector
 

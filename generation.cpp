@@ -1,131 +1,132 @@
 #include "DefaultParticles.hpp"
-#include "Particle.hpp"
-#include "ParticleType.hpp"
-#include "ResonanceType.hpp"
 
 #include "TCanvas.h"
 #include "TFile.h"
 #include "TH1F.h"
 #include "TH2F.h"
-#include "TH3F.h"
-
 #include "TRandom.h"
+#include "TStyle.h"
+
 #include <array>
 #include <cmath>
 #include <iostream>
 #include <vector>
 
-const int N_EVENTS = 1E3;
+const int N_EVENTS = 1E5;
 const int N_PARTICLES_PER_EVENT = 100;
 
-const char *GenerateParticleType() {
-  auto x = gRandom->Rndm();
+bool IsPioneKaone(Particle &first, Particle &second) {
+  bool foundP, foundK;
 
-  if (x < 0.40)
-    return "P+";
-  else if (x < 0.8)
-    return "P-";
-  else if (x < 0.85)
-    return "K+";
-  else if (x < 0.90)
-    return "K-";
-  else if (x < 0.945)
-    return "pr+";
-  else if (x < 0.99)
-    return "pr-";
-  else
-    return "K*";
+  auto iType = first.GetType()->GetName();
+  auto jType = second.GetType()->GetName();
+
+  if (strcmp(iType, "P+") == 0 || strcmp(iType, "P-") == 0) {
+    if (strcmp(jType, "K+") == 0 || strcmp(jType, "K-") == 0) {
+      return true;
+    }
+  } else if (strcmp(jType, "P+") == 0 || strcmp(jType, "P-") == 0) {
+    if (strcmp(iType, "K+") == 0 || strcmp(iType, "K-") == 0) {
+      return true;
+    }
+  }
+  return false;
+  // In this case we know we have a P and a K
+}
+
+void SetHistoOptions(TH1F *histo, const char *xTitle) {
+  histo->SetXTitle(xTitle);
+  histo->SetYTitle("Entries");
 }
 
 void StartGeneration() {
   TFile *file = new TFile("save.root", "RECREATE");
-  std::cout << "Starting generation." << std::endl;
+  std::cout << "Starting generation..." << std::endl;
   DefaultParticles::Load();
 
   gRandom->SetSeed();
+  gStyle->SetOptFit(1111);
 
-  TH1F *histo_particle_types =
-      new TH1F("histo_particelle", "Particelle", 7, 0, 7);
-  histo_particle_types->Sumw2();
-  TH1F *histo_P_module = new TH1F("histo_P_module", "P_module", 100, 0., 1);
-  histo_P_module->Sumw2();
-  TH2F *histo_angle = new TH2F("histo_phi_theta", "Phi & Theta plot", 100, 0,
-                               2 * M_PI, 100, 0, M_PI);
-  histo_angle->Sumw2();
-  TH1F *histo_impulso_trasverso =
-      new TH1F("histo_impulso_trasverso", "impulso_trasverso", 100, 0., 1);
-  histo_impulso_trasverso->Sumw2();
-  TH1F *histo_energia = new TH1F("histo_energia", "Energia", 100, 0., 3);
-  histo_energia->Sumw2();
-  TH1F *inv_mass = new TH1F("inv_mass", "Invariant mass", 100, 0., 3);
-  inv_mass->Sumw2();
-  TH1F *disc_inv_mass =
-      new TH1F("disc_inv_mass", "Discordant invariant mass", 100, 0., 3);
-  disc_inv_mass->Sumw2();
-  TH1F *conc_inv_mass =
-      new TH1F("conc_inv_mass", "Concordant invariant mass", 100, 0., 3);
-  conc_inv_mass->Sumw2();
-  TH1F *p_pos_k_neg =
-      new TH1F("p_pos_k_neg", "Pione+/Kaone- e Pione-/Kaone+", 100, 0., 3);
-  p_pos_k_neg->Sumw2();
-  TH1F *p_pos_k_pos =
-      new TH1F("p_pos_k_pos", "Pione+/Kaone+ e Pione-/Kaone-", 100, 0., 3);
-  p_pos_k_pos->Sumw2();
-  TH1F *k_star_dec = new TH1F("k_star_dec", "Decadimento di K*", 45, 0.7, 1.1);
-  k_star_dec->Sumw2();
+  TH1F *histoParticleTypes =
+      new TH1F("histoParticleTypes", "Particle Types", 7, 0, 7);
+  histoParticleTypes->Sumw2();
+  TH1F *histoPModule = new TH1F("histoPModule", "P Module", 100, 0., 5);
+  histoPModule->Sumw2();
+  TH2F *histoAngles =
+      new TH2F("histoAngles", "Theta & Phi", 100, 0, 2 * M_PI, 100, 0, M_PI);
+  histoAngles->Sumw2();
+  TH1F *histoTransverseImpulse =
+      new TH1F("histoTransverseImpulse", "Impulso traverso", 100, 0., 1);
+  histoTransverseImpulse->Sumw2();
+  TH1F *histoEnergy = new TH1F("histoEnergy", "Energia", 100, 0., 3);
+  histoEnergy->Sumw2();
+  TH1F *histoInvariantMassGeneral =
+      new TH1F("histoInvariantMassGeneral", "Massa invariante", 100, 0., 3);
+  histoInvariantMassGeneral->Sumw2();
+  TH1F *histoDiscInvariantMass = new TH1F(
+      "histoDiscInvariantMass", "Massa invariante discorde", 100, 0., 3);
+  histoDiscInvariantMass->Sumw2();
+  TH1F *histoConcInvariantMass = new TH1F(
+      "histoConcInvariantMass", "Massa invariante concorde", 100, 0., 3);
+  histoConcInvariantMass->Sumw2();
+  TH1F *histoDiscordantPK = new TH1F(
+      "histoDiscordantPK", "Pione+/Kaone- e Pione-/Kaone+", 100, 0., 3);
+  histoDiscordantPK->Sumw2();
+  TH1F *histoConcordantPK = new TH1F(
+      "histoConcordantPK", "Pione+/Kaone+ e Pione-/Kaone-", 100, 0., 3);
+  histoConcordantPK->Sumw2();
+  TH1F *histoKDecInvariantMass =
+      new TH1F("histoKDecInvariantMass", "Decadimento di K*", 45, 0.7, 1.1);
+  histoKDecInvariantMass->Sumw2();
 
-  // std::array<Particle, N_PARTICLES_PER_EVENT + 30> eventParticles;
   Particle eventParticles[N_PARTICLES_PER_EVENT + 30];
 
   for (auto event = 0; event < N_EVENTS; event++) {
-    // Particle *eventParticles[N_PARTICLES_PER_EVENT + 20];
     int decayIndex = N_PARTICLES_PER_EVENT;
     for (auto particleIndex = 0; particleIndex < N_PARTICLES_PER_EVENT;
          particleIndex++) {
-      // Particle part; // = new Particle();
-      double phi = gRandom->Uniform(2 * M_PI);
-      double theta = gRandom->Uniform(M_PI);
-      double momentum = gRandom->Exp(1); // 1 GeV
+      auto phi = gRandom->Uniform(2 * M_PI);
+      auto theta = gRandom->Uniform(M_PI);
+      auto momentum = gRandom->Exp(1); // 1 GeV
 
-      histo_angle->Fill(phi, theta);
-      histo_P_module->Fill(momentum);
+      histoAngles->Fill(phi, theta);
+      histoPModule->Fill(momentum);
 
-      auto pX = momentum * std::sin(phi) * cos(theta);
-      auto pY = momentum * std::sin(phi) * sin(theta);
-      auto pZ = momentum * std::cos(phi);
+      auto pX = momentum * std::sin(theta) * cos(phi);
+      auto pY = momentum * std::sin(theta) * sin(phi);
+      auto pZ = momentum * std::cos(theta);
 
       auto mom_trasv = std::sqrt(std::pow(pX, 2) + std::pow(pY, 2));
-      histo_impulso_trasverso->Fill(mom_trasv);
+      histoTransverseImpulse->Fill(mom_trasv);
 
-      auto partType = GenerateParticleType();
+      auto partType = DefaultParticles::GenerateParticleType();
       Particle part(partType, pX, pY, pZ);
 
-      auto p = part.getFIndex();
+      auto p = part.GetIndex();
 
-      histo_particle_types->Fill(p);
+      histoParticleTypes->Fill(p);
 
-      auto total_energy = part.getTotalEnergy();
+      auto totalEnergy = part.GetTotalEnergy();
 
-      // std::cout << "FILL ENERGY " << std::endl;
-      histo_energia->Fill(total_energy);
+      histoEnergy->Fill(totalEnergy);
       eventParticles[particleIndex] = part;
 
-      if (strcmp(part.getType()->getFName(), "K*") == 0) {
+      if (strcmp(part.GetType()->GetName(), "K*") == 0) {
         Particle dec1;
         Particle dec2;
 
         if (gRandom->Uniform() < 0.5) {
-          dec1.setIndex("P+");
-          dec2.setIndex("K-");
+          dec1.SetIndex("P+");
+          dec2.SetIndex("K-");
         } else {
-          dec1.setIndex("P-");
-          dec2.setIndex("K+");
+          dec1.SetIndex("P-");
+          dec2.SetIndex("K+");
         }
 
         auto err = part.Decay2body(dec1, dec2);
         if (err == 0) {
 
-          k_star_dec->Fill(dec1.getInvariantMass(dec2));
+          histoKDecInvariantMass->Fill(dec1.GetInvariantMass(dec2));
           eventParticles[decayIndex++] = dec1;
           eventParticles[decayIndex++] = dec2;
         }
@@ -138,106 +139,103 @@ void StartGeneration() {
         auto second = eventParticles[j];
 
         auto sign =
-            first.getType()->getFCharge() * second.getType()->getFCharge();
+            first.GetType()->GetCharge() * second.GetType()->GetCharge();
 
-        auto invariantMass = first.getInvariantMass(second);
+        auto invariantMass = first.GetInvariantMass(second);
 
-        inv_mass->Fill(invariantMass);
+        histoInvariantMassGeneral->Fill(invariantMass);
 
         if (sign < 0)
-          disc_inv_mass->Fill(invariantMass);
-        else if (sign > 0) // if (i < N_PARTICLES_PER_EVENT) (per escludere le
-                           // particelle figlie)
-          conc_inv_mass->Fill(invariantMass);
+          histoDiscInvariantMass->Fill(invariantMass);
+        else if (sign > 0)
+          histoConcInvariantMass->Fill(invariantMass);
         else // sign is 0
           continue;
 
-        int pIndex = -1;
-        int kIndex = -1;
-
-        auto iType = first.getType()->getFName();
-        auto jType = second.getType()->getFName();
-
-        if (strcmp(iType, "P+") == 0 || strcmp(iType, "P-") == 0) {
-          pIndex = i;
-          if (strcmp(jType, "K+") == 0 || strcmp(jType, "K-") == 0) {
-            kIndex = i;
-          }
-        } else if (strcmp(jType, "P+") == 0 || strcmp(jType, "P-") == 0) {
-          pIndex = i;
-          if (strcmp(iType, "K+") == 0 || strcmp(iType, "K-") == 0) {
-            kIndex = i;
-          }
-        }
-
-        // In this case we know we have a P and a K
-        if (pIndex != -1 && kIndex != -1) {
-          auto sign =
-              first.getType()->getFCharge() * second.getType()->getFCharge();
+        if (IsPioneKaone(first, second)) {
           if (sign < 0)
-            p_pos_k_neg->Fill(invariantMass);
-          else
-            p_pos_k_pos->Fill(invariantMass);
+            histoDiscordantPK->Fill(invariantMass);
+          else if (sign > 0)
+            histoConcordantPK->Fill(invariantMass);
         }
       }
     }
   }
 
-  double total_entries = histo_particle_types->GetEntries();
+  auto totalEntries = histoParticleTypes->GetEntries();
 
-  TCanvas *canvas1 = new TCanvas();
-
+  TCanvas *canvas1 = new TCanvas("canvas1", "Dati Particelle");
   canvas1->Divide(2, 2);
 
   canvas1->cd(1);
-  histo_particle_types->DrawCopy();
+  SetHistoOptions(histoParticleTypes, "Tipo particella");
+  histoParticleTypes->DrawCopy();
 
   canvas1->cd(2);
-  histo_P_module->DrawCopy();
+  SetHistoOptions(histoParticleTypes, "Modulo impulso P (GeV)");
+  histoPModule->DrawCopy();
 
   canvas1->cd(3);
-  histo_impulso_trasverso->DrawCopy();
+  SetHistoOptions(histoTransverseImpulse, "Modulo impulso trasverso (GeV)");
+  histoTransverseImpulse->DrawCopy();
 
   canvas1->cd(4);
-  histo_energia->DrawCopy();
+  SetHistoOptions(histoEnergy, "Energia (GeV)");
+  histoEnergy->DrawCopy();
 
-  auto *canvas2 = new TCanvas();
+  auto *canvas2 = new TCanvas("canvas2", "Angoli");
   canvas2->Divide(2, 2);
-
   canvas2->cd(1);
-  histo_angle->DrawCopy();
 
-  auto histo_angle_px = histo_angle->ProjectionX();
+  // SetHistoOptions(histoAngles, "Angoli ");
+  histoAngles->DrawCopy();
+
+  auto histoAngleX = histoAngles->ProjectionX();
+  histoAngleX->SetTitle("Phi");
+  histoAngleX->SetXTitle("Phi (rad)");
+  // SetHistoOptions(histoAngleX, "Phi (rad)");
   canvas2->cd(2);
-  histo_angle_px->DrawCopy();
+  histoAngleX->DrawCopy();
 
-  auto histo_angle_py = histo_angle->ProjectionY();
+  auto histoAngleY = histoAngles->ProjectionY();
+  histoAngleY->SetTitle("Theta");
+  histoAngleY->SetXTitle("Theta (rad)");
   canvas2->cd(3);
-  histo_angle_py->DrawCopy();
+  histoAngleY->DrawCopy();
   // proiezione
 
-  auto *canvas3 = new TCanvas();
+  auto *canvas3 = new TCanvas("canvas3", "Masse invarianti");
   canvas3->Divide(2, 3);
 
   canvas3->cd(1);
-  inv_mass->DrawCopy();
+  SetHistoOptions(histoInvariantMassGeneral, "Massa invariante (GeV/c^2)");
+  histoInvariantMassGeneral->DrawCopy();
 
   canvas3->cd(2);
-  disc_inv_mass->DrawCopy();
+  SetHistoOptions(histoDiscInvariantMass, "Massa invariante (GeV/c^2)");
+  histoDiscInvariantMass->DrawCopy();
 
   canvas3->cd(3);
-  conc_inv_mass->DrawCopy();
+  SetHistoOptions(histoConcInvariantMass, "Massa invariante (GeV/c^2)");
+  histoConcInvariantMass->DrawCopy();
 
   canvas3->cd(4);
-  p_pos_k_neg->DrawCopy();
+  SetHistoOptions(histoDiscordantPK, "Massa invariante (GeV/c^2)");
+
+  histoDiscordantPK->DrawCopy();
 
   canvas3->cd(5);
-  p_pos_k_pos->DrawCopy();
+  SetHistoOptions(histoConcordantPK, "Massa invariante (GeV/c^2)");
+  histoConcordantPK->DrawCopy();
 
   canvas3->cd(6);
-  k_star_dec->DrawCopy();
+  SetHistoOptions(histoKDecInvariantMass, "Massa invariante (GeV/c^2)");
+
+  histoKDecInvariantMass->DrawCopy();
 
   file->Write();
-
   file->Close();
+
+  std::cout << "Generation completed. Saved in file \"save.root\"."
+            << std::endl;
 }
