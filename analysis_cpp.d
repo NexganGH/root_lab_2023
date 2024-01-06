@@ -52,6 +52,7 @@
 ./analysis_cpp.so: /home/nico/root/include/Buttons.h
 ./analysis_cpp.so: /home/nico/root/include/TAttBBox2D.h
 ./analysis_cpp.so: /home/nico/root/include/TAttCanvas.h
+./analysis_cpp.so: /home/nico/root/include/TColor.h
 ./analysis_cpp.so: /home/nico/root/include/TF1.h
 ./analysis_cpp.so: /home/nico/root/include/TFormula.h
 ./analysis_cpp.so: /home/nico/root/include/TBits.h
@@ -228,5 +229,7 @@
 ./analysis_cpp.so: /home/nico/root/include/TH2.h
 ./analysis_cpp.so: /home/nico/root/include/TMatrixFBasefwd.h
 ./analysis_cpp.so: /home/nico/root/include/TMatrixDBasefwd.h
+./analysis_cpp.so: /home/nico/root/include/TStyle.h
+./analysis_cpp.so: /home/nico/root/include/TAttText.h
 ./analysis_cpp.so: /home/nico/root/include/RVersion.h /home/nico/root/include/ROOT/RConfig.hxx /home/nico/root/include/TClass.h /home/nico/root/include/TDictAttributeMap.h /home/nico/root/include/TInterpreter.h /home/nico/root/include/TROOT.h /home/nico/root/include/TBuffer.h /home/nico/root/include/TMemberInspector.h /home/nico/root/include/TError.h /home/nico/root/include/RtypesImp.h /home/nico/root/include/TIsAProxy.h /home/nico/root/include/TFileMergeInfo.h /home/nico/root/include/TCollectionProxyInfo.h /home/nico/root/bin/rootcling
 analysis_cpp__ROOTBUILDVERSION= 6.28/06

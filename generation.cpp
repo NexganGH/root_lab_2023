@@ -1,6 +1,7 @@
 #include "DefaultParticles.hpp"
 
 #include "TCanvas.h"
+#include "TColor.h"
 #include "TFile.h"
 #include "TH1F.h"
 #include "TH2F.h"
@@ -10,11 +11,14 @@
 #include <array>
 #include <cmath>
 #include <iostream>
-#include <vector>
 
-const int N_EVENTS = 1E5;
+const int N_EVENTS = 1E3;
 const int N_PARTICLES_PER_EVENT = 100;
 
+/// @brief Checks if one particle is pione and the other kaone.
+/// @param first
+/// @param second
+/// @return
 bool IsPioneKaone(Particle &first, Particle &second) {
   bool foundP, foundK;
 
@@ -31,14 +35,17 @@ bool IsPioneKaone(Particle &first, Particle &second) {
     }
   }
   return false;
-  // In this case we know we have a P and a K
 }
 
+/// @brief Sets the options for this histogram.
+/// @param histo
+/// @param xTitle Title of the x axis.
 void SetHistoOptions(TH1F *histo, const char *xTitle) {
   histo->SetXTitle(xTitle);
   histo->SetYTitle("Entries");
 }
 
+/// @brief Starts the geneneration.
 void StartGeneration() {
   TFile *file = new TFile("save.root", "RECREATE");
   std::cout << "Starting generation..." << std::endl;
@@ -46,6 +53,10 @@ void StartGeneration() {
 
   gRandom->SetSeed();
   gStyle->SetOptFit(1111);
+
+  Int_t cIndex = 5000;
+  TColor *darkGreen = new TColor(cIndex, 0, 102.0 / 255, 0);
+  gStyle->SetHistLineColor(cIndex);
 
   TH1F *histoParticleTypes =
       new TH1F("histoParticleTypes", "Particle Types", 7, 0, 7);
@@ -169,7 +180,7 @@ void StartGeneration() {
 
   canvas1->cd(1);
   SetHistoOptions(histoParticleTypes, "Tipo particella");
-  histoParticleTypes->DrawCopy();
+  histoParticleTypes->DrawCopy("E");
 
   canvas1->cd(2);
   SetHistoOptions(histoParticleTypes, "Modulo impulso P (GeV)");
@@ -188,7 +199,7 @@ void StartGeneration() {
   canvas2->cd(1);
 
   // SetHistoOptions(histoAngles, "Angoli ");
-  histoAngles->DrawCopy();
+  histoAngles->DrawCopy("LEGO");
 
   auto histoAngleX = histoAngles->ProjectionX();
   histoAngleX->SetTitle("Phi");
@@ -230,7 +241,6 @@ void StartGeneration() {
 
   canvas3->cd(6);
   SetHistoOptions(histoKDecInvariantMass, "Massa invariante (GeV/c^2)");
-
   histoKDecInvariantMass->DrawCopy();
 
   file->Write();

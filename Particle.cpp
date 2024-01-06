@@ -32,7 +32,7 @@ int Particle::FindParticle(const char *name) {
   return -1;
 }
 
-ParticleType *Particle::GetParticle(const int index) {
+ParticleType *Particle::GetParticleType(const int index) {
   return fParticleType[index];
 }
 
@@ -94,9 +94,9 @@ void Particle::Print() const {
   std::cout << "m = " << GetMass() << std::endl;
 }
 
-double Particle::GetFPx() const { return fPx_; }
-double Particle::GetFPy() const { return fPy_; }
-double Particle::GetFPz() const { return fPz_; }
+double Particle::GetPx() const { return fPx_; }
+double Particle::GetPy() const { return fPy_; }
+double Particle::GetPz() const { return fPz_; }
 
 void Particle::SetP(double px, double py, double pz) {
   fPx_ = px;
@@ -187,16 +187,12 @@ int Particle::Decay2body(Particle &dau1, Particle &dau2) const {
 void Particle::Boost(double bx, double by, double bz) {
 
   double energy = GetTotalEnergy();
-  // std::cout << "Gettotalenergy: " << energy << std::endl;
   //  Boost this Lorentz vector
 
   double b2 = bx * bx + by * by + bz * bz;
   double gamma = 1.0 / sqrt(1.0 - b2);
-  // std::cout << "b2: " << b2 << std::endl;
   double bp = bx * fPx_ + by * fPy_ + bz * fPz_;
   double gamma2 = b2 > 0 ? (gamma - 1.0) / b2 : 0.0;
-
-  /// std::cout << "gamma " << gamma << ", " << gamma2 << std::endl;
 
   fPx_ += gamma2 * bp * bx + gamma * bx * energy;
   fPy_ += gamma2 * bp * by + gamma * by * energy;

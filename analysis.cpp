@@ -1,10 +1,12 @@
 #include "DefaultParticles.hpp"
 
 #include "TCanvas.h"
+#include "TColor.h"
 #include "TF1.h"
 #include "TFile.h"
 #include "TH1F.h"
 #include "TH2F.h"
+#include "TStyle.h"
 
 #include <iostream>
 
@@ -20,7 +22,7 @@ void PrintParticleTypes(TH1F *histo_particles) {
     // std::cout << "after particle type";
     double n_particle_error = histo_particles->GetBinError(i + 1);
     // std::cout << "after error";
-    auto type = Particle::GetParticle(i);
+    auto type = Particle::GetParticleType(i);
 
     // std::cout << "after type";
     auto type_percentage = n_particle_type / total_n;
@@ -108,37 +110,36 @@ TH1F *SubtractInvMass(TH1F *disc_histo, TH1F *conc_histo) {
 void Analysis() {
   DefaultParticles::Load();
 
+  gStyle->SetOptFit(1111);
+
+  Int_t cIndex = 5000;
+  TColor *darkGreen = new TColor(cIndex, 0, 102.0 / 255, 0);
+  gStyle->SetHistLineColor(cIndex);
+
   TFile *file = new TFile("save.root");
 
   auto *histoParticleTypes = file->Get<TH1F>("histoParticleTypes");
-
   auto *histoPModule = file->Get<TH1F>("histoPModule");
   auto *histoAngles = file->Get<TH2F>("histoAngles");
-
   auto *histoAnglesPx = file->Get<TH1D>("histoAngles_px");
-
   auto *histoAnglesPy = file->Get<TH1D>("histoAngles_py");
-
   auto *histoTransverseImpulse = file->Get<TH1F>("histoTransverseImpulse");
   auto *histoEnergy = file->Get<TH1F>("histoEnergy");
-
   auto *histoInvariantMassGeneral =
       file->Get<TH1F>("histoInvariantMassGeneral");
-
   auto *histoDiscInvariantMass = file->Get<TH1F>("histoDiscInvariantMass");
   auto *histoConcInvariantMass = file->Get<TH1F>("histoConcInvariantMass");
-
   auto *histoDiscordantPK = file->Get<TH1F>("histoDiscordantPK");
   auto *histoConcordantPK = file->Get<TH1F>("histoConcordantPK");
-
   auto *histoKDecInvariantMass = file->Get<TH1F>("histoKDecInvariantMass");
 
   PrintParticleTypes(histoParticleTypes);
   PrintAngularFit(histoAnglesPx, histoAnglesPy);
   PrintPModuleFit(histoPModule);
 
-  TCanvas *canvas1 = new TCanvas("canvas1", "Particelle");
+  // CANVAS 1
 
+  TCanvas *canvas1 = new TCanvas("canvas1", "Particelle");
   canvas1->Divide(2, 2);
 
   canvas1->cd(1);
@@ -159,7 +160,7 @@ void Analysis() {
   canvas2->Divide(2, 2);
 
   canvas2->cd(1);
-  histoAngles->DrawCopy();
+  histoAngles->DrawCopy("LEGO");
 
   canvas2->cd(2);
   histoAnglesPx->DrawCopy();
