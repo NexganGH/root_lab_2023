@@ -7,7 +7,7 @@ void LoadFiles() {
   gROOT->LoadMacro("ResonanceType.cpp+");
   gROOT->LoadMacro("Particle.cpp+");
 
-  gROOT->LoadMacro("generation.cpp");
+  gROOT->LoadMacro("generation.cpp+");
 
   gROOT->LoadMacro("analysis.cpp+");
 }

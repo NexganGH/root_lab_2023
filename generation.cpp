@@ -1,5 +1,6 @@
 #include "DefaultParticles.hpp"
 
+#include "TBenchmark.h"
 #include "TCanvas.h"
 #include "TColor.h"
 #include "TFile.h"
@@ -12,7 +13,7 @@
 #include <cmath>
 #include <iostream>
 
-const int N_EVENTS = 1E3;
+const int N_EVENTS = 1E5;
 const int N_PARTICLES_PER_EVENT = 100;
 
 /// @brief Checks if one particle is pione and the other kaone.
@@ -47,6 +48,9 @@ void SetHistoOptions(TH1F *histo, const char *xTitle) {
 
 /// @brief Starts the geneneration.
 void StartGeneration() {
+  TBenchmark *timer = new TBenchmark();
+  timer->Start("benchmark");
+
   TFile *file = new TFile("save.root", "RECREATE");
   std::cout << "Starting generation..." << std::endl;
   DefaultParticles::Load();
@@ -91,7 +95,6 @@ void StartGeneration() {
   histoKDecInvariantMass->Sumw2();
 
   Particle eventParticles[N_PARTICLES_PER_EVENT + 30];
-
   for (auto event = 0; event < N_EVENTS; event++) {
     int decayIndex = N_PARTICLES_PER_EVENT;
     for (auto particleIndex = 0; particleIndex < N_PARTICLES_PER_EVENT;
@@ -175,6 +178,8 @@ void StartGeneration() {
 
   auto totalEntries = histoParticleTypes->GetEntries();
 
+  // CANVAS 1
+
   TCanvas *canvas1 = new TCanvas("canvas1", "Dati Particelle");
   canvas1->Divide(2, 2);
 
@@ -183,28 +188,28 @@ void StartGeneration() {
   histoParticleTypes->DrawCopy("E");
 
   canvas1->cd(2);
-  SetHistoOptions(histoParticleTypes, "Modulo impulso P (GeV)");
+  SetHistoOptions(histoParticleTypes, "Modulo impulso P (GeV/c)");
   histoPModule->DrawCopy();
 
   canvas1->cd(3);
-  SetHistoOptions(histoTransverseImpulse, "Modulo impulso trasverso (GeV)");
+  SetHistoOptions(histoTransverseImpulse, "Modulo impulso trasverso (GeV/c)");
   histoTransverseImpulse->DrawCopy();
 
   canvas1->cd(4);
   SetHistoOptions(histoEnergy, "Energia (GeV)");
   histoEnergy->DrawCopy();
 
+  // CANVAS 2
+
   auto *canvas2 = new TCanvas("canvas2", "Angoli");
   canvas2->Divide(2, 2);
   canvas2->cd(1);
 
-  // SetHistoOptions(histoAngles, "Angoli ");
   histoAngles->DrawCopy("LEGO");
 
   auto histoAngleX = histoAngles->ProjectionX();
   histoAngleX->SetTitle("Phi");
   histoAngleX->SetXTitle("Phi (rad)");
-  // SetHistoOptions(histoAngleX, "Phi (rad)");
   canvas2->cd(2);
   histoAngleX->DrawCopy();
 
@@ -213,7 +218,11 @@ void StartGeneration() {
   histoAngleY->SetXTitle("Theta (rad)");
   canvas2->cd(3);
   histoAngleY->DrawCopy();
-  // proiezione
+
+  canvas2->cd(4);
+  histoParticleTypes->DrawCopy();
+
+  // CANVAS 3
 
   auto *canvas3 = new TCanvas("canvas3", "Masse invarianti");
   canvas3->Divide(2, 3);
@@ -245,6 +254,9 @@ void StartGeneration() {
 
   file->Write();
   file->Close();
+
+  timer->Stop("benchmark");
+  timer->Show("benchmark");
 
   std::cout << "Generation completed. Saved in file \"save.root\"."
             << std::endl;

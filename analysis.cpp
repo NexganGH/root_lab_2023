@@ -1,4 +1,5 @@
 #include "DefaultParticles.hpp"
+#include "Particle.hpp"
 
 #include "TCanvas.h"
 #include "TColor.h"
@@ -17,14 +18,10 @@ void PrintParticleTypes(TH1F *histo_particles) {
   // std::cout << "Total entries: " << total_n << std::endl;
   for (int i = 0; i < histo_particles->GetNbinsX(); i++) {
 
-    // std::cout << "Particle: " << i << std::endl;
     double n_particle_type = histo_particles->GetBinContent(i + 1);
-    // std::cout << "after particle type";
     double n_particle_error = histo_particles->GetBinError(i + 1);
-    // std::cout << "after error";
     auto type = Particle::GetParticleType(i);
 
-    // std::cout << "after type";
     auto type_percentage = n_particle_type / total_n;
     auto error_percentage = n_particle_error / total_n;
 
@@ -79,16 +76,17 @@ void PrintPModuleFit(TH1F *histoPModule) {
 
 void PrintGausFit(TH1F *histoSottr, const char *title) {
   std::cout << "--- " << title << " ---" << std::endl;
+
   TF1 *f = new TF1("fitGaus", "gaus");
+  // f->SetParameters(1, 0.89, 0.05);
   histoSottr->Fit(f, "Q");
 
+  std::cout << "Amplitude K* = " << f->GetParameter(0) << std::endl;
   std::cout << "Mass K* (mean) = " << f->GetParameter(1) << std::endl;
-
   std::cout << "Width K* (std) = " << f->GetParameter(2) << std::endl;
-
   std::cout << "Mass and Width errors (in order) = ";
 
-  for (int i = 1; i < 3; i++) {
+  for (int i = 0; i < 3; i++) {
     std::cout << f->GetParError(i) << ", ";
   }
   std::cout << std::endl;
@@ -103,6 +101,9 @@ TH1F *SubtractInvMass(TH1F *disc_histo, TH1F *conc_histo) {
   TH1F *res = new TH1F(*disc_histo);
   res->Add(conc_histo, -1);
   res->SetEntries(disc_histo->GetEntries() - conc_histo->GetEntries());
+
+  res->SetXTitle("Massa invariante (GeV/c^2)");
+  res->SetYTitle("Entries");
 
   return res;
 }
@@ -119,7 +120,10 @@ void Analysis() {
   TFile *file = new TFile("save.root");
 
   auto *histoParticleTypes = file->Get<TH1F>("histoParticleTypes");
+  histoParticleTypes->SetXTitle("Tipo particella");
   auto *histoPModule = file->Get<TH1F>("histoPModule");
+  histoPModule->SetYTitle("Entries");
+  histoPModule->SetXTitle("Modulo del momento (GeV/c)");
   auto *histoAngles = file->Get<TH2F>("histoAngles");
   auto *histoAnglesPx = file->Get<TH1D>("histoAngles_px");
   auto *histoAnglesPy = file->Get<TH1D>("histoAngles_py");
@@ -168,6 +172,9 @@ void Analysis() {
   canvas2->cd(3);
   histoAnglesPy->DrawCopy();
 
+  canvas2->cd(4);
+  histoParticleTypes->DrawCopy();
+
   // CANVAS 3
 
   auto *canvas3 = new TCanvas("canvas3", "Massa invariante");
@@ -202,7 +209,6 @@ void Analysis() {
       "Differenza massa invariante fra tutte le particelle");
   canvas4->cd(1);
   histoInvMassDiff->DrawCopy("P");
-  // total->Fit(gaus);
   PrintGausFit(histoInvMassDiff, "General invariant mass subtraction");
   histoInvMassDiff->DrawCopy("P");
 
@@ -218,6 +224,19 @@ void Analysis() {
   histoKDecInvariantMass->DrawCopy();
   PrintGausFit(histoKDecInvariantMass, "K* invariant mass");
   histoKDecInvariantMass->DrawCopy("P");
+
+  // CANVAS 5
+  auto *canvas5 = new TCanvas("canvas5", "Fit");
+  canvas5->Divide(2, 2);
+
+  canvas5->cd(1);
+  histoParticleTypes->DrawCopy("HISTO");
+  canvas5->cd(2);
+  histoPModule->DrawCopy();
+  canvas5->cd(3);
+  histoAnglesPx->DrawCopy();
+  canvas5->cd(4);
+  histoAnglesPy->DrawCopy();
 
   file->Close();
 }

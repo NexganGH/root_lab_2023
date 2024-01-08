@@ -4,6 +4,8 @@
 #include "Particle.hpp"
 #include "TRandom.h"
 
+// Separarlo in file cpp creava problemi con il linking.
+
 class DefaultParticles {
 public:
   static void Load() {
