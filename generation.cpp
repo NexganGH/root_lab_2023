@@ -76,19 +76,19 @@ void StartGeneration() {
   TH1F *histoEnergy = new TH1F("histoEnergy", "Energia", 100, 0., 3);
   histoEnergy->Sumw2();
   TH1F *histoInvariantMassGeneral =
-      new TH1F("histoInvariantMassGeneral", "Massa invariante", 100, 0., 3);
+      new TH1F("histoInvariantMassGeneral", "Massa invariante", 150, 0., 3);
   histoInvariantMassGeneral->Sumw2();
   TH1F *histoDiscInvariantMass = new TH1F(
-      "histoDiscInvariantMass", "Massa invariante discorde", 100, 0., 3);
+      "histoDiscInvariantMass", "Massa invariante discorde", 150, 0., 3);
   histoDiscInvariantMass->Sumw2();
   TH1F *histoConcInvariantMass = new TH1F(
-      "histoConcInvariantMass", "Massa invariante concorde", 100, 0., 3);
+      "histoConcInvariantMass", "Massa invariante concorde", 150, 0., 3);
   histoConcInvariantMass->Sumw2();
   TH1F *histoDiscordantPK = new TH1F(
-      "histoDiscordantPK", "Pione+/Kaone- e Pione-/Kaone+", 100, 0., 3);
+      "histoDiscordantPK", "Pione+/Kaone- e Pione-/Kaone+", 150, 0., 3);
   histoDiscordantPK->Sumw2();
   TH1F *histoConcordantPK = new TH1F(
-      "histoConcordantPK", "Pione+/Kaone+ e Pione-/Kaone-", 100, 0., 3);
+      "histoConcordantPK", "Pione+/Kaone+ e Pione-/Kaone-", 150, 0., 3);
   histoConcordantPK->Sumw2();
   TH1F *histoKDecInvariantMass =
       new TH1F("histoKDecInvariantMass", "Decadimento di K*", 45, 0.7, 1.1);

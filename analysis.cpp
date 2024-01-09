@@ -84,7 +84,7 @@ void PrintGausFit(TH1F *histoSottr, const char *title) {
   std::cout << "Amplitude K* = " << f->GetParameter(0) << std::endl;
   std::cout << "Mass K* (mean) = " << f->GetParameter(1) << std::endl;
   std::cout << "Width K* (std) = " << f->GetParameter(2) << std::endl;
-  std::cout << "Mass and Width errors (in order) = ";
+  std::cout << "Amplitude, Mass and Width errors (in order) = ";
 
   for (int i = 0; i < 3; i++) {
     std::cout << f->GetParError(i) << ", ";
@@ -97,13 +97,17 @@ void PrintGausFit(TH1F *histoSottr, const char *title) {
   std::cout << "------" << std::endl << std::endl;
 }
 
+/// @brief Subtracts two histograms
+/// @param disc_histo
+/// @param conc_histo
+/// @return
 TH1F *SubtractInvMass(TH1F *disc_histo, TH1F *conc_histo) {
   TH1F *res = new TH1F(*disc_histo);
   res->Add(conc_histo, -1);
   res->SetEntries(disc_histo->GetEntries() - conc_histo->GetEntries());
-
   res->SetXTitle("Massa invariante (GeV/c^2)");
   res->SetYTitle("Entries");
+  res->GetXaxis()->SetRangeUser(0, 2); // zooming in to see the gaussian
 
   return res;
 }
