@@ -32,6 +32,9 @@ void PrintParticleTypes(TH1F *histo_particles) {
   std::cout << "------" << std::endl << std::endl;
 }
 
+/// @brief Fits the angles.
+/// @param histoAnglesPx
+/// @param histoAnglesPy
 void PrintAngularFit(TH1D *histoAnglesPx, TH1D *histoAnglesPy) {
 
   auto print_single_angle = [](TH1D *histo_angle) {
@@ -54,6 +57,8 @@ void PrintAngularFit(TH1D *histoAnglesPx, TH1D *histoAnglesPy) {
   std::cout << "------" << std::endl << std::endl;
 }
 
+/// @brief Fits the module and then prints the result.
+/// @param histoPModule
 void PrintPModuleFit(TH1F *histoPModule) {
 
   std::cout << "--- P Module ---" << std::endl;
